@@ -8,12 +8,12 @@ Looking for YOLO V4 OpenCV C++/Python inference? [Check this repository](https:/
 
 Make sure you have already on your system:
 
-- OpenCV 4.5+
-- Python 3.7+
 - Any modern Linux OS (tested on Ubuntu 20.04)
-- GCC 9.0+
+- OpenCV 4.5.4+
+- Python 3.7+ (only if you are intended to run the python program)
+- GCC 9.0+ (only if you are intended to run the C++ program)
 
-IMPORTANT!!! Note that OpenCV versions prior to 4.5 will not work at all.
+IMPORTANT!!! Note that OpenCV versions prior to 4.5.4 will not work at all.
 
 ## Running the python script
 
