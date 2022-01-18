@@ -22,7 +22,7 @@ NMS_THRESHOLD = 0.4
 CONFIDENCE_THRESHOLD = 0.4
 
 def detect(image, net):
-    blob = cv2.dnn.blobFromImage(image, 1/255.0, (INPUT_WIDTH, INPUT_HEIGHT), (104, 117, 123), swapRB=True, crop=False)
+    blob = cv2.dnn.blobFromImage(image, 1/255.0, (INPUT_WIDTH, INPUT_HEIGHT), swapRB=True, crop=False)
     net.setInput(blob)
     preds = net.forward()
     return preds

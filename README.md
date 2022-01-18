@@ -1,6 +1,6 @@
 # yolov5-opencv-cpp-python
 
-Example of performing inference with ultralytics YOLO V5, OpenCV 4.5.3 DNN, C++ and Python 
+Example of performing inference with ultralytics YOLO V5, OpenCV 4.5.4 DNN, C++ and Python 
 
 Looking for YOLO V4 OpenCV C++/Python inference? [Check this repository](https://github.com/doleron/yolov4-opencv-cpp-python)
 

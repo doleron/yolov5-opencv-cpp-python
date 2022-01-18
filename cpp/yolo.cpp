@@ -61,7 +61,7 @@ void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, c
 
     auto input_image = format_yolov5(image);
     
-    cv::dnn::blobFromImage(input_image, blob, 1./255., cv::Size(INPUT_WIDTH, INPUT_HEIGHT), cv::Scalar(104, 117, 123), true, false);
+    cv::dnn::blobFromImage(input_image, blob, 1./255., cv::Size(INPUT_WIDTH, INPUT_HEIGHT), cv::Scalar(), true, false);
     net.setInput(blob);
     std::vector<cv::Mat> outputs;
     net.forward(outputs, net.getUnconnectedOutLayersNames());
