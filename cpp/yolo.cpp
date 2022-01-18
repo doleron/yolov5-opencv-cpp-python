@@ -16,7 +16,7 @@ std::vector<std::string> load_class_list()
 
 void load_net(cv::dnn::Net &net, bool is_cuda)
 {
-    auto result = cv::dnn::readNet("config_files/yolov5n.onnx");
+    auto result = cv::dnn::readNet("config_files/yolov5s.onnx");
     if (is_cuda)
     {
         std::cout << "Attempty to use CUDA\n";
@@ -34,97 +34,89 @@ void load_net(cv::dnn::Net &net, bool is_cuda)
 
 const std::vector<cv::Scalar> colors = {cv::Scalar(255, 255, 0), cv::Scalar(0, 255, 0), cv::Scalar(0, 255, 255), cv::Scalar(255, 0, 0)};
 
-const int netWidth = 640;
-const int netHeight = 640;
-const float nmsThreshold = 0.45;
-const float boxThreshold = 0.25;
-const float netStride[3] = {8, 16.0, 32};
-const float netAnchors[3][6] = {{10.0, 13.0, 16.0, 30.0, 33.0, 23.0}, {30.0, 61.0, 62.0, 45.0, 59.0, 119.0}, {116.0, 90.0, 156.0, 198.0, 373.0, 326.0}};
-const float classThreshold = 0.25;
+const float INPUT_WIDTH = 640.0;
+const float INPUT_HEIGHT = 640.0;
+const float SCORE_THRESHOLD = 0.2;
+const float NMS_THRESHOLD = 0.4;
+const float CONFIDENCE_THRESHOLD = 0.4;
 
 struct Detection
 {
-    int id;
+    int class_id;
     float confidence;
     cv::Rect box;
 };
 
-void detect(cv::Mat &SrcImg, cv::dnn::Net &net, std::vector<Detection> &output, const std::vector<std::string> &className)
-{
+cv::Mat format_yolov5(const cv::Mat &source) {
+    int col = source.cols;
+    int row = source.rows;
+    int _max = MAX(col, row);
+    cv::Mat result = cv::Mat::zeros(_max, _max, CV_8UC3);
+    source.copyTo(result(cv::Rect(0, 0, col, row)));
+    return result;
+}
+
+void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, const std::vector<std::string> &className) {
     cv::Mat blob;
-    int col = SrcImg.cols;
-    int row = SrcImg.rows;
-    int maxLen = MAX(col, row);
-    cv::Mat netInputImg = SrcImg.clone();
-    if (maxLen > 1.2 * col || maxLen > 1.2 * row)
-    {
-        cv::Mat resizeImg = cv::Mat::zeros(maxLen, maxLen, CV_8UC3);
-        SrcImg.copyTo(resizeImg(cv::Rect(0, 0, col, row)));
-        netInputImg = resizeImg;
-    }
-    cv::dnn::blobFromImage(netInputImg, blob, 1 / 255.0, cv::Size(netWidth, netHeight), cv::Scalar(104, 117, 123), true, false);
+
+    auto input_image = format_yolov5(image);
+    
+    cv::dnn::blobFromImage(input_image, blob, 1./255., cv::Size(INPUT_WIDTH, INPUT_HEIGHT), cv::Scalar(104, 117, 123), true, false);
     net.setInput(blob);
-    std::vector<cv::Mat> netOutputImg;
-    net.forward(netOutputImg, net.getUnconnectedOutLayersNames());
+    std::vector<cv::Mat> outputs;
+    net.forward(outputs, net.getUnconnectedOutLayersNames());
 
-    int nDims = netOutputImg[0].dims;
-    auto size = netOutputImg[0].size();
+    float x_factor = input_image.cols / INPUT_WIDTH;
+    float y_factor = input_image.rows / INPUT_HEIGHT;
+    
+    float *data = (float *)outputs[0].data;
 
-    //std::cout << size.height << " " << size.width << " " << nDims << " " << netOutputImg[0].channels() << "\n";
-
-    std::vector<int> classIds;
+    const int dimensions = 85;
+    const int rows = 25200;
+    
+    std::vector<int> class_ids;
     std::vector<float> confidences;
     std::vector<cv::Rect> boxes;
-    float ratio_h = (float)netInputImg.rows / netHeight;
-    float ratio_w = (float)netInputImg.cols / netWidth;
-    int net_width = className.size() + 5;
-    float *pdata = (float *)netOutputImg[0].data;
-    for (int stride = 0; stride < 3; stride++)
-    {
-        int grid_x = (int)(netWidth / netStride[stride]);
-        int grid_y = (int)(netHeight / netStride[stride]);
-        for (int anchor = 0; anchor < 3; anchor++)
-        {
-            const float anchor_w = netAnchors[stride][anchor * 2];
-            const float anchor_h = netAnchors[stride][anchor * 2 + 1];
-            for (int i = 0; i < grid_y; i++)
-            {
-                for (int j = 0; j < grid_x; j++)
-                {
-                    float box_score = pdata[4];
-                    if (box_score > boxThreshold)
-                    {
-                        cv::Mat scores(1, className.size(), CV_32FC1, pdata + 5);
-                        cv::Point classIdPoint;
-                        double max_class_socre;
-                        minMaxLoc(scores, 0, &max_class_socre, 0, &classIdPoint);
-                        max_class_socre = (float)max_class_socre;
-                        if (max_class_socre > classThreshold)
-                        {
-                            float x = pdata[0];
-                            float y = pdata[1];
-                            float w = pdata[2];
-                            float h = pdata[3];
-                            int left = (x - 0.5 * w) * ratio_w;
-                            int top = (y - 0.5 * h) * ratio_h;
-                            classIds.push_back(classIdPoint.x);
-                            confidences.push_back(max_class_socre * box_score);
-                            boxes.push_back(cv::Rect(left, top, int(w * ratio_w), int(h * ratio_h)));
-                        }
-                    }
-                    pdata += net_width;
-                }
+
+    for (int i = 0; i < rows; ++i) {
+
+        float confidence = data[4];
+        if (confidence >= CONFIDENCE_THRESHOLD) {
+
+            float * classes_scores = data + 5;
+            cv::Mat scores(1, className.size(), CV_32FC1, classes_scores);
+            cv::Point class_id;
+            double max_class_score;
+            minMaxLoc(scores, 0, &max_class_score, 0, &class_id);
+            if (max_class_score > SCORE_THRESHOLD) {
+
+                confidences.push_back(confidence);
+
+                class_ids.push_back(class_id.x);
+
+                float x = data[0];
+                float y = data[1];
+                float w = data[2];
+                float h = data[3];
+                int left = int((x - 0.5 * w) * x_factor);
+                int top = int((y - 0.5 * h) * y_factor);
+                int width = int(w * x_factor);
+                int height = int(h * y_factor);
+                boxes.push_back(cv::Rect(left, top, width, height));
             }
+
         }
+
+        data += 85;
+
     }
 
     std::vector<int> nms_result;
-    cv::dnn::NMSBoxes(boxes, confidences, classThreshold, nmsThreshold, nms_result);
-    for (int i = 0; i < nms_result.size(); i++)
-    {
+    cv::dnn::NMSBoxes(boxes, confidences, SCORE_THRESHOLD, NMS_THRESHOLD, nms_result);
+    for (int i = 0; i < nms_result.size(); i++) {
         int idx = nms_result[i];
         Detection result;
-        result.id = classIds[idx];
+        result.class_id = class_ids[idx];
         result.confidence = confidences[idx];
         result.box = boxes[idx];
         output.push_back(result);
@@ -176,7 +168,7 @@ int main(int argc, char **argv)
 
             auto detection = output[i];
             auto box = detection.box;
-            auto classId = detection.id;
+            auto classId = detection.class_id;
             const auto color = colors[classId % colors.size()];
             cv::rectangle(frame, box, color, 3);
 

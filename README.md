@@ -13,11 +13,25 @@ Make sure you have already on your system:
 - Any modern Linux OS (tested on Ubuntu 20.04)
 - GCC 9.0+
 
-Note that OpenCV versions prior to 4.5 will not work at all.
+IMPORTANT!!! Note that OpenCV versions prior to 4.5 will not work at all.
 
 ## Running the python script
 
-Available soon.
+The python code is [here](python/yolo.py).
+
+```bash
+git clone https://github.com/doleron/yolov5-opencv-cpp-python.git
+cd yolov5-opencv-cpp-python
+python python/yolo.py 
+```
+
+If your machine/OpenCV install are CUDA capable you can try out running using the GPU:
+
+```bash
+git clone https://github.com/doleron/yolov5-opencv-cpp-python.git
+cd yolov5-opencv-cpp-python
+python python/yolo.py cuda
+```
 
 ## Running the C++ program
 
@@ -26,7 +40,7 @@ The C++ code is [here](cpp/yolo.cpp).
 ```bash
 git clone https://github.com/doleron/yolov5-opencv-cpp-python.git
 cd yolov5-opencv-cpp-python
-g++ -O2 cpp/yolo.cpp -o yolo_example `pkg-config --cflags --libs opencv4`
+g++ -O3 cpp/yolo.cpp -o yolo_example `pkg-config --cflags --libs opencv4`
 ./yolo_example
 ```
 
@@ -35,7 +49,7 @@ Or using CUDA if available:
 ```bash
 git clone https://github.com/doleron/yolov5-opencv-cpp-python.git
 cd yolov5-opencv-cpp-python
-g++ -O2 cpp/yolo.cpp -o yolo_example `pkg-config --cflags --libs opencv4`
+g++ -O3 cpp/yolo.cpp -o yolo_example `pkg-config --cflags --libs opencv4`
 ./yolo_example cuda
 ```
 ![running the examples](https://github.com/doleron/yolov5-opencv-cpp-python/raw/main/yolov5.png)
@@ -46,14 +60,7 @@ PS.: Video sample from [https://www.youtube.com/watch?v=NyLF8nHIquM](https://www
 
 This repository uses YOLO V5 but it is not the only YOLO version out there. You can read [this article](https://towardsdatascience.com/yolo-v4-or-yolo-v5-or-pp-yolo-dad8e40f7109) to learn more about YOLO versions and choose the more suitable one for you.
 
-## Status
-
-This work is still on the way:
-
-- C++ inference using ONNX model is ok
-- Python inference using ONNXX model is under work
-
-## Export yolo v5 models to .onnx format
+## Exporting yolo v5 models to .onnx format
 
 Check here: https://github.com/ultralytics/yolov5/issues/251
 
@@ -90,7 +97,13 @@ $
 ```
 ### throubleshooting
 
-First time I got a error with protobuf version. I fixed it by running:
+First time I got a error with protobuf version:
+
+```
+"AttributeError: module 'google.protobuf.descriptor' has no attribute '_internal_create_key"?
+```
+
+ I fixed it by running:
 
 ```bash
 pip install --upgrade protobuf
@@ -98,8 +111,5 @@ pip install --upgrade protobuf
 
 ## References
 
-- https://blog.roboflow.com/yolov5-v6-0-is-here/
 - https://github.com/ultralytics/yolov5/issues/708
-- https://github.com/hotsuyuki/YOLOv5_PyTorch_cpp/blob/main/src/object_detector/src/object_detector.cpp
-- https://github.com/UNeedCryDear/yolov5-opencv-dnn-cpp/blob/main/yolo.cpp
-- https://github.com/hpc203/yolov5-dnn-cpp-python-v2/blob/main/main_yolo.cpp
+- https://github.com/ultralytics/yolov5/issues/708
