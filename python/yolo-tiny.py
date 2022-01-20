@@ -40,15 +40,18 @@ for r in range(25200):
             box = np.array([left, top, int(w), int(h)])
             boxes.append(box)
 
-box = boxes[0]
-class_id = class_ids[0]
-
 class_list = []
 with open("config_files/classes.txt", "r") as f:
     class_list = [cname.strip() for cname in f.readlines()]
 
-cv2.rectangle(image, box, (0, 255, 255), 2)
-cv2.rectangle(image, (box[0], box[1] - 20), (box[0] + box[2], box[1]), (0, 255, 255), -1)
-cv2.putText(image, class_list[class_id], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+for i in range(len(class_ids)):
+
+    box = boxes[i]
+    class_id = class_ids[i]
+
+    cv2.rectangle(image, box, (0, 255, 255), 2)
+    cv2.rectangle(image, (box[0], box[1] - 20), (box[0] + box[2], box[1]), (0, 255, 255), -1)
+    cv2.putText(image, class_list[class_id], (box[0], box[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, .5, (0,0,0))
+
 cv2.imshow("output", image)
 cv2.waitKey()
