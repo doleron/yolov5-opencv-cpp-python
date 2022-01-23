@@ -8,6 +8,8 @@ Looking for YOLO V4 OpenCV C++/Python inference? [Check this repository](https:/
 
 This code is explained in [this medium article](https://medium.com/@doleron/detecting-objects-with-yolov5-opencv-python-and-c-c7cf13d1483c)
 
+[![Example of YOLO v5 detection on video file](http://img.youtube.com/vi/cHDLvp_NPOk/0.jpg)](http://www.youtube.com/watch?v=cHDLvp_NPOk "Example of YOLO v5 detection on video file")
+
 ## Prerequisites
 
 Make sure you have already on your system:
