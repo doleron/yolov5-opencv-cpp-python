@@ -4,6 +4,10 @@ Example of performing inference with ultralytics YOLO V5, OpenCV 4.5.4 DNN, C++ 
 
 Looking for YOLO V4 OpenCV C++/Python inference? [Check this repository](https://github.com/doleron/yolov4-opencv-cpp-python)
 
+## Code explanation
+
+This code is explained in [this medium article](https://medium.com/@doleron/detecting-objects-with-yolov5-opencv-python-and-c-c7cf13d1483c)
+
 ## Prerequisites
 
 Make sure you have already on your system:
@@ -111,5 +115,4 @@ pip install --upgrade protobuf
 
 ## References
 
-- https://github.com/ultralytics/yolov5/issues/708
 - https://github.com/ultralytics/yolov5/issues/708
