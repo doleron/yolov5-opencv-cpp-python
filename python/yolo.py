@@ -3,8 +3,14 @@ import time
 import sys
 import numpy as np
 
+# Configs
+video_path = "../../Videos/bigroad.mp4"
+onnx_path = "../config_files/best.onnx"
+is_cuda = False if cv2.cuda.getCudaEnabledDeviceCount() == 0 else True
+
+
 def build_model(is_cuda):
-    net = cv2.dnn.readNet("config_files/yolov5s.onnx")
+    net = cv2.dnn.readNet(onnx_path)
     if is_cuda:
         print("Attempty to use CUDA")
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
@@ -28,12 +34,12 @@ def detect(image, net):
     return preds
 
 def load_capture():
-    capture = cv2.VideoCapture("sample.mp4")
+    capture = cv2.VideoCapture(video_path)
     return capture
 
 def load_classes():
     class_list = []
-    with open("config_files/classes.txt", "r") as f:
+    with open("../config_files/classes.txt", "r") as f:
         class_list = [cname.strip() for cname in f.readlines()]
     return class_list
 
@@ -114,6 +120,12 @@ while True:
         print("End of stream")
         break
 
+    (h, w) = frame.shape[:2]
+    width = 1600
+    r = width / float(w)
+    dim = (width, int(h * r))
+    frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
     inputImage = format_yolov5(frame)
     outs = detect(inputImage, net)
 
@@ -136,12 +148,18 @@ while True:
     
     if fps > 0:
         fps_label = "FPS: %.2f" % fps
-        cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 2)
+
+
 
     cv2.imshow("output", frame)
 
     if cv2.waitKey(1) > -1:
         print("finished by user")
+        cv2.destroyAllWindows()
         break
 
 print("Total frames: " + str(total_frames))
+
+if __name__ == "__main__":
+    pass
