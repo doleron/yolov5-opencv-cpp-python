@@ -151,7 +151,10 @@ while True:
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 2)
 
 
-
+    
+    
+    # The 'frame' in there is the final img.
+    
     cv2.imshow("output", frame)
 
     if cv2.waitKey(1) > -1:
