@@ -3,11 +3,12 @@ import time
 import sys
 import numpy as np
 
-root = __file__.removesuffix('/python/yolo.py')
+from definitions import ROOT_PATH
+
 
 # Configs
-video_path = root + "/sample.mp4"
-onnx_path = root + "/config_files/best.onnx"
+video_path = ROOT_PATH + "/sample.mp4"
+onnx_path = ROOT_PATH + "/config_files/best.onnx"
 is_cuda = False if cv2.cuda.getCudaEnabledDeviceCount() == 0 else True
 
 
@@ -46,7 +47,7 @@ def load_capture():
 
 def load_classes():
     class_list = []
-    with open(root + "/config_files/classes.txt", "r") as f:
+    with open(ROOT_PATH + "/config_files/classes.txt", "r") as f:
         class_list = [cname.strip() for cname in f.readlines()]
     return class_list
 

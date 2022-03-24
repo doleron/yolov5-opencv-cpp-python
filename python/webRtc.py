@@ -11,8 +11,7 @@ from aiohttp import web
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaPlayer, MediaRelay
 
-ROOT = os.path.dirname(__file__)
-
+from definitions import ROOT_PATH
 
 relay = None
 webcam = None
@@ -42,12 +41,12 @@ def create_local_tracks(play_from):
 
 
 async def index(request):
-    content = open(os.path.join(ROOT, "index.html"), "r").read()
+    content = open(os.path.join(ROOT_PATH, "index.html"), "r").read()
     return web.Response(content_type="text/html", text=content)
 
 
 async def javascript(request):
-    content = open(os.path.join(ROOT, "client.js"), "r").read()
+    content = open(os.path.join(ROOT_PATH, "client.js"), "r").read()
     return web.Response(content_type="application/javascript", text=content)
 
 
