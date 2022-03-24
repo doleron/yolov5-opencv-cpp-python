@@ -2,7 +2,6 @@ import cv2
 import time
 import sys
 import numpy as np
-import webRtc
 
 root = __file__.removesuffix('/python/yolo.py')
 
@@ -168,8 +167,7 @@ while True:
     out.write(frame)
     print("Done")
 
-    cv2.imshow("output", frame)
-    # webRtc.wrapvideo(frame, _)
+    #cv2.imshow("output", frame)
     if cv2.waitKey(1) > -1:
         print("finished by user")
         cv2.destroyAllWindows()
