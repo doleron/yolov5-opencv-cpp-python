@@ -4,9 +4,11 @@ import sys
 import numpy as np
 import webRtc
 
+root = ""
+
 # Configs
-video_path = "../sample.mp4"
-onnx_path = "../config_files/best.onnx"
+video_path = root + "/sample.mp4"
+onnx_path = root + "/config_files/best.onnx"
 is_cuda = False if cv2.cuda.getCudaEnabledDeviceCount() == 0 else True
 
 
@@ -29,6 +31,7 @@ NMS_THRESHOLD = 0.4
 CONFIDENCE_THRESHOLD = 0.4
 
 def detect(image, net):
+    print("Detecting...")
     blob = cv2.dnn.blobFromImage(image, 1/255.0, (INPUT_WIDTH, INPUT_HEIGHT), swapRB=True, crop=False)
     net.setInput(blob)
     preds = net.forward()
@@ -40,7 +43,7 @@ def load_capture():
 
 def load_classes():
     class_list = []
-    with open("../config_files/classes.txt", "r") as f:
+    with open(root + "/config_files/classes.txt", "r") as f:
         class_list = [cname.strip() for cname in f.readlines()]
     return class_list
 
@@ -114,6 +117,11 @@ frame_count = 0
 total_frames = 0
 fps = -1
 
+frame_width = int(capture.get(3))
+frame_height = int(capture.get(4))
+
+out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
+
 while True:
 
     _, frame = capture.read()
@@ -125,7 +133,7 @@ while True:
     width = 1600
     r = width / float(w)
     dim = (width, int(h * r))
-    frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+    # frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     inputImage = format_yolov5(frame)
     outs = detect(inputImage, net)
@@ -152,9 +160,12 @@ while True:
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 2)
 
 
+    print("Writing frame...")
+    out.write(frame)
+    print("Done")
 
-    cv2.imshow("output", frame)
-    webRtc.wrapvideo(frame, _)
+    # cv2.imshow("output", frame)
+    # webRtc.wrapvideo(frame, _)
     if cv2.waitKey(1) > -1:
         print("finished by user")
         cv2.destroyAllWindows()
