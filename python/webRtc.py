@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import yolo
 
 # capture = yolo.load_capture()
 #

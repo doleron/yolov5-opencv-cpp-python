@@ -2,9 +2,10 @@ import cv2
 import time
 import sys
 import numpy as np
+import webRtc
 
 # Configs
-video_path = "../../Videos/bigroad.mp4"
+video_path = "../sample.mp4"
 onnx_path = "../config_files/best.onnx"
 is_cuda = False if cv2.cuda.getCudaEnabledDeviceCount() == 0 else True
 
@@ -153,7 +154,7 @@ while True:
 
 
     cv2.imshow("output", frame)
-
+    webRtc.wrapvideo(frame, _)
     if cv2.waitKey(1) > -1:
         print("finished by user")
         cv2.destroyAllWindows()
