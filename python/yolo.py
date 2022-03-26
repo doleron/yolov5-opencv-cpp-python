@@ -4,10 +4,10 @@ import sys
 import numpy as np
 import webRtc
 
-root = "/home/aieson/Code/A01/yolov5-opencv-cpp-python"
+root = ""
 
 # Configs
-video_path = root + "/Videos/bigroad.mp4"
+video_path = root + "/sample.mp4"
 onnx_path = root + "/config_files/best.onnx"
 is_cuda = False if cv2.cuda.getCudaEnabledDeviceCount() == 0 else True
 
@@ -64,7 +64,7 @@ def wrap_detection(input_image, output_data):
     for r in range(rows):
         row = output_data[r]
         confidence = row[4]
-        if confidence.any() >= 0.4:
+        if confidence >= 0.4:
 
             classes_scores = row[5:]
             _, _, _, max_indx = cv2.minMaxLoc(classes_scores)
@@ -107,6 +107,7 @@ def format_yolov5(frame):
 
 colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
 
+is_cuda = len(sys.argv) > 1 and sys.argv[1] == "cuda"
 
 net = build_model(is_cuda)
 capture = load_capture()
@@ -132,7 +133,7 @@ while True:
     width = 1600
     r = width / float(w)
     dim = (width, int(h * r))
-    frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+    # frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     inputImage = format_yolov5(frame)
     outs = detect(inputImage, net)
@@ -153,7 +154,7 @@ while True:
         fps = 1000000000 * frame_count / (end - start)
         frame_count = 0
         start = time.time_ns()
-
+    
     if fps > 0:
         fps_label = "FPS: %.2f" % fps
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 2)
@@ -163,7 +164,7 @@ while True:
     out.write(frame)
     print("Done")
 
-    cv2.imshow("output", frame)
+    # cv2.imshow("output", frame)
     # webRtc.wrapvideo(frame, _)
     if cv2.waitKey(1) > -1:
         print("finished by user")
