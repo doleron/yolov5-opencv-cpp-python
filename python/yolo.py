@@ -18,7 +18,7 @@ def build_model(is_cuda):
     if is_cuda:
         print("Attempty to use CUDA")
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
-        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)
+        net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
     else:
         print("Running on CPU")
         net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
@@ -32,10 +32,13 @@ NMS_THRESHOLD = 0.4
 CONFIDENCE_THRESHOLD = 0.4
 
 def detect(image, net):
-    print("Detecting...")
+    # print("Detecting...")
     blob = cv2.dnn.blobFromImage(image, 1/255.0, (INPUT_WIDTH, INPUT_HEIGHT), swapRB=True, crop=False)
+    start = time.time()
     net.setInput(blob)
     preds = net.forward()
+    end = time.time()
+    print((end - start) * 1000, "ms")
     return preds
 
 def load_capture():
@@ -108,7 +111,6 @@ def format_yolov5(frame):
 
 colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
 
-is_cuda = len(sys.argv) > 1 and sys.argv[1] == "cuda"
 
 net = build_model(is_cuda)
 capture = load_capture()
