@@ -5,6 +5,7 @@ import numpy as np
 import webRtc
 
 root = ""
+root = "/home/aieson/Code/A01/yolov5-opencv-cpp-python"  # wcs
 
 # Configs
 video_path = root + "/sample.mp4"
@@ -160,9 +161,9 @@ while True:
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 2)
 
 
-    print("Writing frame...")
-    out.write(frame)
-    print("Done")
+    # print("Writing frame...")
+    # out.write(frame)
+    # print("Done")
 
     # cv2.imshow("output", frame)
     # webRtc.wrapvideo(frame, _)
