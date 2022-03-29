@@ -5,6 +5,8 @@ import numpy as np
 import cupy as cp
 import webRtc
 from PIL import Image
+import copy
+from numba import jit, njit
 
 root = ""
 root = "/home/aieson/Code/A01/yolov5-opencv-cpp-python"
@@ -17,6 +19,11 @@ class_file_path = "/config_files/classes.txt"
 # onnx_path = root + "/config_files/yolov5s.onnx"
 # class_file_path = "/config_files/classes_yolov5s.txt"
 is_cuda = False if cv2.cuda.getCudaEnabledDeviceCount() == 0 else True
+
+
+# 鼠标选定区域
+banned_areas = []
+window_name = "output"
 
 
 def build_model(is_cuda):
@@ -62,6 +69,7 @@ def load_classes():
     return class_list
 
 class_list = load_classes()
+
 
 def wrap_detection(input_image, output_data):
     class_ids = []
@@ -109,6 +117,8 @@ def wrap_detection(input_image, output_data):
 
     return result_class_ids, result_confidences, result_boxes
 
+
+@jit(nopython=True)
 def format_yolov5(frame):
     row, col, _ = frame.shape
     _max = max(col, row)
@@ -121,6 +131,7 @@ colors = [(255, 255, 0), (0, 255, 0), (0, 255, 255), (255, 0, 0)]
 net = build_model(is_cuda)
 capture = load_capture()
 
+
 start = time.time_ns()
 frame_count = 0
 total_frames = 0
@@ -129,7 +140,25 @@ fps = -1
 frame_width = int(capture.get(3))
 frame_height = int(capture.get(4))
 
+
+
+# get_area_from_mouse()
+
+
+# 先手动制定一下区域
+banned_areas = np.array([
+    [88, 465],
+    [532, 470],
+    [275, 786],
+    [0, 660],
+    [0, 506]
+                         ], np.int32)
+banned_areas = banned_areas.reshape((-1, 1, 2))
+
 # out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'), 30, (frame_width, frame_height))
+gst_str_rtp = "appsrc ! videoconvert ! video/x-raw,format=I420,width=1280,height=720,framerate=15/1 ! x264enc speed-preset=superfast tune=zerolatency ! rtph264pay ! udpsink host=1.116.157.189 port=8004"
+out = cv2.VideoWriter(gst_str_rtp, 0, 15, (1280, 720), True)
+
 
 while True:
 
@@ -142,9 +171,10 @@ while True:
         break
 
     (h, w) = frame.shape[:2]
-    width = 1600
+    width = 1280
     r = width / float(w)
     dim = (width, int(h * r))
+
     frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
 
     inputImage = format_yolov5(frame)
@@ -173,16 +203,31 @@ while True:
         fps_label = "FPS: %.2f" % fps
         cv2.putText(frame, fps_label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 2)
 
-    # print("Writing frame...")
-    # out.write(frame)
-    # print("Done")
 
-    cv2.imshow("output", frame)
+    cv2.polylines(frame, [banned_areas], True, colors[2], 5)
+
+    overlay = frame.copy()
+    output = frame.copy()
+
+    cv2.fillPoly(overlay, [banned_areas], colors[2])
+    alpha = 0.3
+    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+
+
+    print("Writing frame...")
+    out.write(frame)
+    print("Done")
+
+
+    cv2.imshow(window_name, frame)
     # webRtc.wrapvideo(frame, _)
     if cv2.waitKey(1) & 0xFF == ord('q'): # 按下 q
         print("finished by user")
         cv2.destroyAllWindows()
         break
+
+
 
 print("Total frames: " + str(total_frames))
 
