@@ -103,7 +103,7 @@ $
 ```
 ### throubleshooting
 
-First time I got a error with protobuf version:
+First time I got an error with protobuf version:
 
 ```
 "AttributeError: module 'google.protobuf.descriptor' has no attribute '_internal_create_key"?
