@@ -71,16 +71,16 @@ void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, c
     
     float *data = (float *)outputs[0].data;
 
-    const int dimensions = 85;
-    const int rows = 25200;
+    //const int dimensions = 85;
+    const int rows = 25200*6; //or 151216;
     
     std::vector<int> class_ids;
     std::vector<float> confidences;
     std::vector<cv::Rect> boxes;
 
-    for (int i = 0; i < rows; ++i) {
+    for (int i = 4; i < rows; i += 6) {
 
-        float confidence = data[4];
+        float confidence = data[i];
         if (confidence >= CONFIDENCE_THRESHOLD) {
 
             float * classes_scores = data + 5;
@@ -94,10 +94,10 @@ void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, c
 
                 class_ids.push_back(class_id.x);
 
-                float x = data[0];
-                float y = data[1];
-                float w = data[2];
-                float h = data[3];
+                float x = data[i-4];
+                float y = data[i-3];
+                float w = data[i-2];
+                float h = data[i-1];
                 int left = int((x - 0.5 * w) * x_factor);
                 int top = int((y - 0.5 * h) * y_factor);
                 int width = int(w * x_factor);
@@ -106,8 +106,6 @@ void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, c
             }
 
         }
-
-        data += 85;
 
     }
 
